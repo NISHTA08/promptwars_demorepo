@@ -1,5 +1,8 @@
 from fastapi import FastAPI
+import os
 
-app = FastAPI()
+app = FastAPI(title="Signal Backend")
 
-# Placeholder for routes
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Signal Backend is running!"}
