@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./signal-backend"
+    ],
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/signal-backend"
+    }
+}

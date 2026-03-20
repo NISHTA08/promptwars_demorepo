@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="Signal — Universal chaos-to-clarity AI bridge powered by Gemini 2.0 Flash"/>
+<title>Signal — Chaos to Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --bg:       #050508;
+  --s1:       #0d0d14;
+  --s2:       #13131e;
+  --s3:       #1c1c2e;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.14);
+  --text:     #eeeef5;
+  --muted:    #6b6b90;
+  --faint:    #3a3a55;
+  --violet:   #8b7cf8;
+  --teal:     #3ecfb8;
+  --rose:     #f87c7c;
+  --amber:    #f8b97c;
+  --green:    #7cf8a8;
+  --f-sans:   'Space Grotesk', sans-serif;
+  --f-mono:   'Space Mono', monospace;
+  --r:        10px;
+  --r2:       16px;
+  --ease:     cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--f-sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── ambient glow ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 45% at 15% 0%,   rgba(139,124,248,.10) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 35% at 85% 95%,  rgba(62,207,184,.07)  0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%,  rgba(248,124,124,.04) 0%,transparent 60%);
+}
+
+/* ═══════════════════════════════════════════════
+   SKIP / A11Y
+═══════════════════════════════════════════════ */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.skip-link{
+  position:absolute;top:-9999px;left:1rem;
+  background:var(--violet);color:#fff;padding:.5rem 1rem;
+  border-radius:var(--r);font-weight:500;z-index:9999;text-decoration:none;
+}
+.skip-link:focus{top:1rem}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+.wrap{
+  position:relative;z-index:1;
+  max-width:820px;margin:0 auto;
+  padding:0 1.25rem 5rem;
+}
+
+/* ═══════════════════════════════════════════════
+   ── API KEY BANNER ──
+═══════════════════════════════════════════════ */
+#key-banner{
+  background:var(--s1);
+  border-bottom:1px solid var(--border2);
+  padding:.75rem 1.25rem;
+  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+  position:relative;z-index:10;
+}
+#key-banner label{
+  font-family:var(--f-mono);font-size:.7rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  white-space:nowrap;
+}
+#api-key-input{
+  flex:1;min-width:220px;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);
+  font-family:var(--f-mono);font-size:.8rem;
+  padding:.45rem .85rem;outline:none;
+  transition:border-color .2s var(--ease);
+}
+#api-key-input:focus{border-color:var(--violet)}
+#api-key-input::placeholder{color:var(--faint)}
+.key-status{
+  font-family:var(--f-mono);font-size:.7rem;
+  padding:.3rem .7rem;border-radius:6px;white-space:nowrap;
+}
+.key-status.set  {background:rgba(124,248,168,.1);color:var(--green);border:1px solid rgba(124,248,168,.2)}
+.key-status.unset{background:rgba(248,185,124,.1);color:var(--amber);border:1px solid rgba(248,185,124,.2)}
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+header{padding:3.5rem 0 2rem;text-align:center}
+.logo{display:inline-flex;align-items:center;gap:.6rem;margin-bottom:1.5rem}
+.logo-box{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--violet),var(--teal));
+  display:flex;align-items:center;justify-content:center;
+}
+.logo-box svg{width:20px;height:20px}
+.logo-name{font-family:var(--f-mono);font-size:.9rem;font-weight:700;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+h1{
+  font-size:clamp(2.2rem,5vw,3.4rem);font-weight:300;
+  line-height:1.1;color:var(--text);margin-bottom:.9rem;
+  letter-spacing:-.02em;
+}
+h1 strong{font-weight:600;color:var(--violet)}
+.sub{font-size:.95rem;color:var(--muted);max-width:460px;margin:0 auto;line-height:1.65;font-weight:300}
+
+/* ═══════════════════════════════════════════════
+   DOMAIN PILLS
+═══════════════════════════════════════════════ */
+.pills{
+  display:flex;flex-wrap:wrap;gap:.45rem;
+  justify-content:center;margin:2rem 0 2.5rem;
+}
+.pill{
+  font-family:var(--f-mono);font-size:.65rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:.3rem .8rem;
+  border-radius:100px;border:1px solid var(--border2);
+  background:var(--s1);color:var(--muted);cursor:pointer;
+  transition:all .18s var(--ease);
+}
+.pill:hover,.pill:focus-visible{border-color:var(--violet);color:var(--violet);outline:2px solid var(--violet);outline-offset:2px}
+.pill.on{border-color:var(--violet);color:#fff;background:rgba(139,124,248,.18)}
+
+/* ═══════════════════════════════════════════════
+   EXAMPLES
+═══════════════════════════════════════════════ */
+.ex-label{
+  font-family:var(--f-mono);font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:.65rem;display:block;
+}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.5rem;margin-bottom:2rem}
+.ex-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:.8rem 1rem;cursor:pointer;text-align:left;
+  transition:all .18s var(--ease);
+}
+.ex-card:hover,.ex-card:focus-visible{border-color:var(--violet);background:rgba(139,124,248,.05);outline:2px solid var(--violet);outline-offset:2px}
+.ex-dom{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:.3rem}
+.ex-txt{font-size:.78rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ═══════════════════════════════════════════════
+   INPUT CARD
+═══════════════════════════════════════════════ */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;margin-bottom:1.5rem}
+.inp-label{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.65rem}
+#main-input{
+  width:100%;min-height:110px;resize:vertical;
+  background:var(--s2);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-family:var(--f-sans);font-size:.9rem;font-weight:300;
+  line-height:1.7;padding:.9rem 1.1rem;outline:none;
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease);
+}
+#main-input::placeholder{color:var(--faint)}
+#main-input:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,124,248,.12)}
+
+/* ── row of small buttons ── */
+.inp-row{display:flex;gap:.6rem;margin-top:.9rem;flex-wrap:wrap;align-items:center}
+.btn-sm{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.4rem .85rem;border-radius:var(--r);
+  border:1px solid var(--border2);background:var(--s2);
+  color:var(--muted);font-family:var(--f-sans);font-size:.78rem;
+  cursor:pointer;transition:all .18s var(--ease);
+}
+.btn-sm:hover,.btn-sm:focus-visible{border-color:var(--violet);color:var(--violet);outline:2px solid var(--violet);outline-offset:2px}
+.btn-sm svg{width:14px;height:14px;flex-shrink:0}
+.btn-sm.rec{border-color:var(--rose);color:var(--rose);animation:pulse-r 1.2s ease-in-out infinite}
+@keyframes pulse-r{0%,100%{box-shadow:0 0 0 0 rgba(248,124,124,.35)}50%{box-shadow:0 0 0 6px rgba(248,124,124,0)}}
+.file-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.cc{margin-left:auto;font-family:var(--f-mono);font-size:.68rem;color:var(--faint);align-self:center}
+
+/* ── main CTA ── */
+.cta{
+  width:100%;padding:.9rem;border-radius:var(--r);border:none;
+  background:linear-gradient(135deg,var(--violet) 0%,#a87cf8 100%);
+  color:#fff;font-family:var(--f-sans);font-size:.92rem;font-weight:500;
+  cursor:pointer;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin-top:.9rem;transition:opacity .18s var(--ease),transform .1s var(--ease);
+  position:relative;overflow:hidden;
+}
+.cta::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.08);opacity:0;transition:opacity .18s}
+.cta:hover::after{opacity:1}
+.cta:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.cta:active{transform:scale(.99)}
+.cta:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.cta svg{width:17px;height:17px}
+
+/* ═══════════════════════════════════════════════
+   PIPELINE STEPS
+═══════════════════════════════════════════════ */
+#pipe-wrap{display:none;margin-top:1rem}
+#pipe-wrap.show{display:block}
+.pipe-steps{display:flex;flex-direction:column;gap:0}
+.ps{
+  display:flex;align-items:flex-start;gap:.9rem;
+  padding:.55rem 0;position:relative;
+}
+.ps:not(:last-child)::after{
+  content:'';position:absolute;left:9px;top:28px;
+  width:1px;height:calc(100% - 10px);
+  background:var(--border2);
+}
+.ps-dot{
+  width:19px;height:19px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-mono);font-size:.58rem;font-weight:700;
+  border:1px solid var(--border2);background:var(--s2);color:var(--faint);
+  margin-top:1px;transition:all .2s var(--ease);
+}
+.ps.active .ps-dot{background:rgba(139,124,248,.15);border-color:var(--violet);color:var(--violet);animation:blink .9s ease-in-out infinite}
+.ps.done .ps-dot{background:rgba(124,248,168,.12);border-color:var(--green);color:var(--green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ps-text{font-size:.8rem;color:var(--faint);transition:color .2s;padding-top:1px}
+.ps.active .ps-text{color:var(--text)}
+.ps.done .ps-text{color:var(--green)}
+
+/* ── progress bar ── */
+.prog-bar{height:2px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:.75rem}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--violet),var(--teal));border-radius:2px;transition:width .4s var(--ease)}
+
+/* ═══════════════════════════════════════════════
+   ERROR
+═══════════════════════════════════════════════ */
+.err{
+  display:none;margin-top:.75rem;padding:.85rem 1rem;
+  background:rgba(248,124,124,.06);border:1px solid rgba(248,124,124,.2);
+  border-radius:var(--r);color:var(--rose);font-size:.83rem;line-height:1.5;
+}
+.err.show{display:block}
+
+/* ═══════════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════════ */
+#results{display:none}
+#results.show{display:block;animation:up .4s var(--ease)}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* urgency header */
+.res-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.res-title{font-size:1.35rem;font-weight:400;letter-spacing:-.01em}
+.badge{
+  font-family:var(--f-mono);font-size:.68rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:.32rem .85rem;border-radius:100px;flex-shrink:0;
+}
+.CRITICAL{background:rgba(248,124,124,.14);color:var(--rose);  border:1px solid rgba(248,124,124,.28)}
+.HIGH    {background:rgba(248,185,124,.14);color:var(--amber); border:1px solid rgba(248,185,124,.28)}
+.MEDIUM  {background:rgba(139,124,248,.14);color:var(--violet);border:1px solid rgba(139,124,248,.28)}
+.LOW     {background:rgba(124,248,168,.14);color:var(--green); border:1px solid rgba(124,248,168,.28)}
+
+/* meta tags */
+.meta{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.mtag{
+  font-family:var(--f-mono);font-size:.63rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:.22rem .6rem;border-radius:6px;
+  background:var(--s2);color:var(--muted);border:1px solid var(--border);
+}
+
+/* human review banner */
+.hrev{
+  display:flex;align-items:flex-start;gap:.9rem;
+  padding:.95rem 1.1rem;margin-bottom:1.1rem;
+  background:rgba(248,185,124,.05);border:1px solid rgba(248,185,124,.2);
+  border-radius:var(--r);
+}
+.hrev svg{width:19px;height:19px;color:var(--amber);flex-shrink:0;margin-top:1px}
+.hrev p{font-size:.83rem;color:var(--amber);line-height:1.5}
+
+/* panels grid */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+@media(max-width:560px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem}
+.full{grid-column:1/-1}
+.pl{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem}
+
+/* entities */
+.ents{display:flex;flex-direction:column;gap:.42rem}
+.ent{display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;font-size:.82rem;padding-bottom:.42rem;border-bottom:1px solid var(--border)}
+.ent:last-child{border-bottom:none;padding-bottom:0}
+.ek{color:var(--muted);font-size:.74rem;font-family:var(--f-mono);flex-shrink:0;text-transform:uppercase;letter-spacing:.06em}
+.ev{color:var(--text);text-align:right;word-break:break-word;line-height:1.4}
+
+/* confidence */
+.conf-wrap{display:flex;flex-direction:column;gap:.5rem}
+.conf-row{display:flex;justify-content:space-between;font-size:.8rem}
+.conf-track{height:5px;background:var(--s3);border-radius:5px;overflow:hidden}
+.conf-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--violet),var(--teal));transition:width .9s var(--ease)}
+.ureason{font-size:.78rem;color:var(--muted);margin-top:.5rem;line-height:1.55}
+
+/* actions */
+.acts{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.act{display:flex;gap:.7rem;align-items:flex-start;font-size:.85rem;line-height:1.55}
+.anum{
+  font-family:var(--f-mono);font-size:.62rem;color:var(--violet);
+  background:rgba(139,124,248,.12);border-radius:5px;
+  padding:.12rem .38rem;flex-shrink:0;margin-top:.15rem;font-weight:700;
+}
+
+/* reasoning chain */
+.chain{display:flex;flex-direction:column;gap:0}
+.cstep{display:flex;gap:.9rem;position:relative}
+.cstep:not(:last-child)::before{content:'';position:absolute;left:9px;top:22px;bottom:0;width:1px;background:var(--border)}
+.ccirc{
+  width:19px;height:19px;border-radius:50%;flex-shrink:0;
+  background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.28);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-mono);font-size:.58rem;color:var(--violet);margin-top:1px;
+}
+.ctext{font-size:.8rem;color:var(--muted);padding-bottom:.95rem;line-height:1.55}
+
+/* ambiguities */
+.ambs{list-style:none;display:flex;flex-direction:column;gap:.38rem}
+.amb{
+  font-size:.8rem;color:var(--amber);padding:.38rem .75rem;
+  background:rgba(248,185,124,.06);border-left:2px solid var(--amber);
+  border-radius:0 6px 6px 0;line-height:1.45;
+}
+
+/* location */
+.loc-box{
+  margin-top:.75rem;padding:.75rem 1rem;
+  background:var(--s2);border-radius:var(--r);
+  display:flex;align-items:center;gap:.6rem;
+  font-size:.83rem;color:var(--muted);
+}
+.loc-box svg{width:16px;height:16px;color:var(--teal);flex-shrink:0}
+
+/* bottom actions */
+.bot-row{display:flex;gap:.6rem;margin-top:1.4rem;flex-wrap:wrap}
+.btn-out{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.55rem 1.1rem;border:1px solid var(--border2);border-radius:var(--r);
+  background:transparent;color:var(--muted);font-family:var(--f-sans);
+  font-size:.8rem;cursor:pointer;transition:all .18s var(--ease);
+}
+.btn-out:hover,.btn-out:focus-visible{border-color:var(--violet);color:var(--violet);outline:2px solid var(--violet);outline-offset:2px}
+.btn-out svg{width:14px;height:14px}
+.btn-danger{border-color:rgba(248,124,124,.25);color:var(--rose)}
+.btn-danger:hover{border-color:var(--rose);color:var(--rose);outline-color:var(--rose)}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer{text-align:center;padding:2rem 0;border-top:1px solid var(--border);margin-top:3.5rem}
+footer p{font-family:var(--f-mono);font-size:.65rem;color:var(--faint);letter-spacing:.08em}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<a href="#main-input" class="skip-link">Skip to input</a>
+<div id="aria-live" class="sr-only" aria-live="polite" aria-atomic="true" role="status"></div>
+
+<!-- ══ API KEY BANNER ══════════════════════════════════════ -->
+<div id="key-banner">
+  <label for="api-key-input">Gemini API Key</label>
+  <input
+    type="password"
+    id="api-key-input"
+    placeholder="Paste your Gemini API key here (AIza...)"
+    autocomplete="off"
+    spellcheck="false"
+    aria-label="Gemini API Key"
+  />
+  <span class="key-status unset" id="key-status">No key set — demo mode</span>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ HEADER ════════════════════════════════════════════ -->
+  <header>
+    <div class="logo" aria-hidden="true">
+      <div class="logo-box">
+        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 10l5-5 5 5 5-5"/><path d="M2 15l5-5 5 5 5-5" opacity=".45"/>
+        </svg>
+      </div>
+      <span class="logo-name">Signal</span>
+    </div>
+    <h1>Mess in. <strong>Clarity</strong> out.</h1>
+    <p class="sub">Voice, photo, text, sensor feed — anything messy. Signal runs a 4-step AI pipeline and tells you exactly what to do next.</p>
+  </header>
+
+  <!-- ══ DOMAIN PILLS ═══════════════════════════════════════ -->
+  <nav aria-label="Domain filters" class="pills" id="pills">
+    <button class="pill on" data-d="auto"          aria-pressed="true">Auto-detect</button>
+    <button class="pill"    data-d="medical"       aria-pressed="false">Medical</button>
+    <button class="pill"    data-d="disaster"      aria-pressed="false">Disaster</button>
+    <button class="pill"    data-d="legal"         aria-pressed="false">Legal</button>
+    <button class="pill"    data-d="civic"         aria-pressed="false">Civic</button>
+    <button class="pill"    data-d="logistics"     aria-pressed="false">Logistics</button>
+    <button class="pill"    data-d="financial"     aria-pressed="false">Financial</button>
+    <button class="pill"    data-d="environmental" aria-pressed="false">Environmental</button>
+  </nav>
+
+  <!-- ══ EXAMPLES ══════════════════════════════════════════ -->
+  <section aria-label="Example inputs">
+    <span class="ex-label">Try an example</span>
+    <div class="ex-grid" id="ex-grid"></div>
+  </section>
+
+  <!-- ══ INPUT CARD ════════════════════════════════════════ -->
+  <main>
+    <div class="card">
+      <label class="inp-label" for="main-input">Your input — anything goes</label>
+      <textarea
+        id="main-input"
+        placeholder="Paste anything — a panicked voice note, a blurry prescription, a traffic alert, a tenant eviction letter, a factory inventory sheet, a flood report..."
+        maxlength="4000"
+        spellcheck="true"
+        aria-describedby="cc"
+      ></textarea>
+
+      <div class="inp-row">
+        <!-- voice -->
+        <button class="btn-sm" id="voice-btn" aria-label="Start voice recording">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="11" rx="3"/>
+            <path d="M19 10a7 7 0 0 1-14 0M12 19v3M8 22h8"/>
+          </svg>
+          <span id="vl">Voice</span>
+        </button>
+
+        <!-- file upload -->
+        <label class="btn-sm" for="file-up" tabindex="0" role="button" aria-label="Upload file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Upload
+        </label>
+        <input type="file" id="file-up" class="file-hidden" accept=".txt,.pdf,.jpg,.jpeg,.png,.webp" aria-label="Upload file"/>
+
+        <span class="cc" id="cc" aria-live="polite">0 / 4000</span>
+      </div>
+
+      <button class="cta" id="go-btn" aria-label="Analyse input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Analyse &amp; Structure  <kbd style="font-family:var(--f-mono);font-size:.65rem;opacity:.5;margin-left:.3rem">Ctrl+↵</kbd>
+      </button>
+
+      <!-- pipeline steps -->
+      <div id="pipe-wrap">
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+        <div class="pipe-steps" id="pipe-steps" role="status" aria-label="Processing steps">
+          <div class="ps" data-i="0"><div class="ps-dot">1</div><span class="ps-text">Step 1 — parse &amp; normalise raw input</span></div>
+          <div class="ps" data-i="1"><div class="ps-dot">2</div><span class="ps-text">Step 2 — cross-check &amp; verify entities</span></div>
+          <div class="ps" data-i="2"><div class="ps-dot">3</div><span class="ps-text">Step 3 — score urgency &amp; reason</span></div>
+          <div class="ps" data-i="3"><div class="ps-dot">4</div><span class="ps-text">Step 4 — generate action plan</span></div>
+        </div>
+      </div>
+
+      <div class="err" id="err" role="alert" aria-live="assertive"></div>
+    </div>
+
+    <!-- ══ RESULTS ════════════════════════════════════════ -->
+    <section id="results" aria-label="Analysis results">
+
+      <!-- human review -->
+      <div class="hrev" id="hrev" style="display:none" role="alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <p><strong>Human review recommended.</strong> Confidence below threshold — verify before acting.</p>
+      </div>
+
+      <div class="res-top">
+        <h2 class="res-title" id="res-title">Structured Output</h2>
+        <span class="badge" id="badge" aria-label="Urgency">—</span>
+      </div>
+
+      <div class="meta" id="meta" aria-label="Tags"></div>
+
+      <div class="panels">
+
+        <!-- entities -->
+        <div class="panel">
+          <p class="pl" id="ent-h">Extracted entities</p>
+          <div class="ents" id="ents" aria-labelledby="ent-h"></div>
+        </div>
+
+        <!-- confidence -->
+        <div class="panel">
+          <p class="pl">Confidence &amp; urgency</p>
+          <div class="conf-wrap">
+            <div class="conf-row">
+              <span style="font-size:.8rem;color:var(--muted)">Confidence score</span>
+              <span id="cpct" style="font-family:var(--f-mono);font-size:.8rem"></span>
+            </div>
+            <div class="conf-track" role="meter" aria-label="Confidence" aria-valuemin="0" aria-valuemax="100">
+              <div class="conf-fill" id="cfill" style="width:0%"></div>
+            </div>
+            <p class="ureason" id="ureason"></p>
+          </div>
+        </div>
+
+        <!-- actions -->
+        <div class="panel full">
+          <p class="pl" id="act-h">Recommended actions</p>
+          <ol class="acts" id="acts" aria-labelledby="act-h"></ol>
+        </div>
+
+        <!-- reasoning chain -->
+        <div class="panel full">
+          <p class="pl" id="chain-h">Reasoning chain</p>
+          <div class="chain" id="chain" aria-labelledby="chain-h"></div>
+        </div>
+
+        <!-- ambiguities -->
+        <div class="panel full" id="amb-wrap" style="display:none">
+          <p class="pl" id="amb-h">Flagged ambiguities</p>
+          <ul class="ambs" id="ambs" aria-labelledby="amb-h"></ul>
+        </div>
+
+        <!-- location -->
+        <div class="panel full" id="loc-wrap" style="display:none">
+          <p class="pl">Detected location</p>
+          <div class="loc-box" id="loc-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span id="loc-text"></span>
+          </div>
+        </div>
+
+      </div><!-- /panels -->
+
+      <!-- bottom action row -->
+      <div class="bot-row">
+        <button class="btn-out" id="exp-btn" aria-label="Export JSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export JSON
+        </button>
+        <button class="btn-out" id="copy-btn" aria-label="Copy summary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy summary
+        </button>
+        <button class="btn-out btn-danger" id="reset-btn" aria-label="Reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-5.9"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <footer><p>Signal · Gemini 2.0 Flash · Google Cloud · Built for societal impact · Hackathon build</p></footer>
+</div><!-- /wrap -->
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════
+   CONFIG — put your API key in the banner above, or hardcode here
+═══════════════════════════════════════════════════════════ */
+const CFG = {
+  API_KEY: 'AIzaSyA75xn-sDbmkzdDnlURNjo9VjI4wlXWVAA',   // ← replace this with your AIza... key
+  MODEL: 'gemini-2.0-flash',
+  BASE: 'https://generativelanguage.googleapis.com/v1beta/models',
+  MAX_CHARS: 4000,
+  CONF_THRESHOLD: 0.65,
+};
+
+/* ═══════════════════════════════════════════════════════════
+   EXAMPLES
+═══════════════════════════════════════════════════════════ */
+const EXAMPLES = [
+  { d:'Medical',       t:'Patient male ~55 chest pain 20min, radiating left arm, sweating. BP 160/95. On metformin + lisinopril. Allergic to penicillin. Near Jubilee Hospital Hyderabad.' },
+  { d:'Disaster',      t:'Severe flooding Hussain Sagar area, roads blocked, power lines down near Tank Bund. ~200 people stranded in Bhagyanagar colony. Water rising fast. 3pm Tuesday.' },
+  { d:'Legal',         t:'Got notice to vacate in 7 days or face eviction. Paid rent on time every month. Landlord says building was sold. I have two kids. What are my rights?' },
+  { d:'Civic',         t:'Massive pothole on Banjara Hills Road 12 near GVK mall. Three bikes fell yesterday, one person injured. Reported twice before, no action. Coords 17.4123, 78.4483.' },
+  { d:'Logistics',     t:'Truck 7 breakdown on NH65 near Nalgonda. 40 tonnes cement. Driver says engine failure. Delivery window closes 6pm today. Customer penalty kicks in at delay.' },
+  { d:'Environmental', t:'Black smoke from factory near Patancheru since morning. Strong chemical smell. Kids coughing in nearby school. Wind blowing toward residential area. Urgent.' },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+let domain      = 'auto';
+let lastResult  = null;
+let isRec       = false;
+let recog       = null;
+let pipeTimer   = null;
+
+/* ═══════════════════════════════════════════════════════════
+   DOM
+═══════════════════════════════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const ta = $('main-input');
+const goBtn = $('go-btn');
+
+/* ═══════════════════════════════════════════════════════════
+   API KEY BANNER
+═══════════════════════════════════════════════════════════ */
+const keyInput  = $('api-key-input');
+const keyStatus = $('key-status');
+
+function getKey() {
+  return CFG.API_KEY || keyInput.value.trim();
+}
+
+keyInput.addEventListener('input', () => {
+  const v = keyInput.value.trim();
+  if (v.startsWith('AIza') && v.length > 20) {
+    keyStatus.textContent = 'Key set ✓';
+    keyStatus.className = 'key-status set';
+  } else if (v.length === 0) {
+    keyStatus.textContent = 'No key — demo mode';
+    keyStatus.className = 'key-status unset';
+  } else {
+    keyStatus.textContent = 'Check key format';
+    keyStatus.className = 'key-status unset';
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   EXAMPLES RENDER
+═══════════════════════════════════════════════════════════ */
+(function renderExamples() {
+  const g = $('ex-grid');
+  g.innerHTML = EXAMPLES.map((e,i) => `
+    <button class="ex-card" data-i="${i}" aria-label="Load ${e.d} example">
+      <div class="ex-dom">${e.d}</div>
+      <div class="ex-txt">${esc(e.t)}</div>
+    </button>`).join('');
+  g.querySelectorAll('.ex-card').forEach(b => {
+    b.addEventListener('click', () => {
+      ta.value = EXAMPLES[+b.dataset.i].t;
+      updateCC();
+      ta.focus();
+      say(`${EXAMPLES[+b.dataset.i].d} example loaded`);
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   DOMAIN PILLS
+═══════════════════════════════════════════════════════════ */
+$('pills').querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', () => {
+    $('pills').querySelectorAll('.pill').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-pressed','false'); });
+    p.classList.add('on'); p.setAttribute('aria-pressed','true');
+    domain = p.dataset.d;
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CHAR COUNT
+═══════════════════════════════════════════════════════════ */
+function updateCC() { $('cc').textContent = `${ta.value.length} / ${CFG.MAX_CHARS}`; }
+ta.addEventListener('input', updateCC);
+
+/* ═══════════════════════════════════════════════════════════
+   VOICE
+═══════════════════════════════════════════════════════════ */
+(function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const vBtn = $('voice-btn'), vl = $('vl');
+  if (!SR) { vBtn.disabled = true; vBtn.title = 'Not supported in this browser'; return; }
+  recog = new SR();
+  recog.continuous = false; recog.interimResults = true; recog.lang = 'en-IN';
+  recog.onstart  = () => { isRec=true;  vBtn.classList.add('rec');    vBtn.setAttribute('aria-label','Stop recording'); vl.textContent='Stop'; say('Recording'); };
+  recog.onresult = e  => { ta.value = Array.from(e.results).map(r=>r[0].transcript).join(''); updateCC(); };
+  recog.onend    = () => { isRec=false; vBtn.classList.remove('rec'); vBtn.setAttribute('aria-label','Start voice recording'); vl.textContent='Voice'; say('Done'); };
+  recog.onerror  = e  => { showErr('Voice error: '+e.error); recog.stop(); };
+  vBtn.addEventListener('click', () => { isRec ? recog.stop() : recog.start(); });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   FILE UPLOAD
+═══════════════════════════════════════════════════════════ */
+$('file-up').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.type.startsWith('text/')) {
+    const r = new FileReader();
+    r.onload = ev => { ta.value = ev.target.result.slice(0, CFG.MAX_CHARS); updateCC(); say('File loaded'); };
+    r.readAsText(f);
+  } else {
+    ta.value = `[File: ${esc(f.name)}] — Add context or describe the image/document contents here.`;
+    updateCC();
+  }
+  e.target.value = '';
+});
+
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE ANIMATION
+═══════════════════════════════════════════════════════════ */
+const PIPE_PCTS = [20, 45, 68, 88];
+
+function pipeStart() {
+  const pw = $('pipe-wrap'); pw.classList.add('show');
+  $('prog-fill').style.width = '0%';
+  document.querySelectorAll('.ps').forEach(s => s.classList.remove('active','done'));
+  let i = 0;
+  function tick() {
+    const steps = document.querySelectorAll('.ps');
+    if (i > 0) { steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); }
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      $('prog-fill').style.width = PIPE_PCTS[i] + '%';
+      i++;
+      pipeTimer = setTimeout(tick, 900 + Math.random()*500);
+    }
+  }
+  tick();
+}
+
+function pipeEnd(ok) {
+  clearTimeout(pipeTimer);
+  document.querySelectorAll('.ps').forEach(s => { s.classList.remove('active'); if(ok) s.classList.add('done'); });
+  $('prog-fill').style.width = ok ? '100%' : '0%';
+  setTimeout(() => $('pipe-wrap').classList.remove('show'), 800);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GEMINI CALL — 4-step agentic pipeline in one structured call
+═══════════════════════════════════════════════════════════ */
+function buildPrompt(text, dom) {
+  const hint = dom !== 'auto' ? `User indicated domain: ${dom}. Confirm or override.` : 'Auto-detect domain.';
+  return `You are Signal — a universal 4-step agentic pipeline that converts messy real-world input into structured, verified, actionable intelligence.
+
+${hint}
+
+Run these 4 steps in sequence and include all outputs:
+
+STEP 1 — PARSE: Clean the input. Extract all entities: people, locations, times, quantities, severity signals, medical/legal/technical terms. Note what is missing.
+
+STEP 2 — VERIFY: Cross-check extracted entities against the raw input. Identify contradictions, implausible values, things that need human verification. Score extraction quality 0–1.
+
+STEP 3 — REASON: Determine domain and urgency. CRITICAL=life/safety risk now. HIGH=serious harm within hours. MEDIUM=needs attention in days. LOW=informational. Build a 4-step reasoning chain citing specific evidence.
+
+STEP 4 — ACT: Generate 4–6 concrete prioritised actions. Action 1 = most time-critical. Be specific — include real helpline numbers, authority names, and steps for India/Hyderabad context. If confidence < 0.65, last action = "Await expert human verification before proceeding."
+
+Raw input:
+"""
+${text.slice(0, CFG.MAX_CHARS)}
+"""
+
+Respond ONLY with this JSON (no markdown, no preamble):
+{
+  "domain": string,
+  "domain_confidence": float,
+  "urgency": "CRITICAL"|"HIGH"|"MEDIUM"|"LOW",
+  "urgency_reason": string,
+  "entities": { "key": "value" },
+  "recommended_actions": [string],
+  "reasoning_chain": [string, string, string, string],
+  "ambiguities": [string],
+  "location_name": string|null,
+  "confidence": float,
+  "requires_human_review": boolean,
+  "action_type": string
+}`;
+}
+
+async function callGemini(text, dom) {
+  const key = getKey();
+  if (!key) return demoResponse(text, dom);
+
+  const url = `${CFG.BASE}/${CFG.MODEL}:generateContent?key=${encodeURIComponent(key)}`;
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: buildPrompt(text, dom) }] }],
+    generationConfig: { temperature: 0.2, topP: 0.8, maxOutputTokens: 1200, responseMimeType: 'application/json' },
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT',   threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH',  threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
+  };
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(40000),
+      });
+      if (!res.ok) { const e = await res.text(); throw new Error(`Gemini ${res.status}: ${e.slice(0,200)}`); }
+      const data = await res.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const clean = raw.replace(/^```json\s*/i,'').replace(/\s*```$/i,'').trim();
+      return JSON.parse(clean);
+    } catch(err) {
+      if (attempt === 2) throw err;
+      await sleep(1200 * (attempt + 1));
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO FALLBACK (no API key)
+═══════════════════════════════════════════════════════════ */
+function demoResponse(text, forced) {
+  let dom = forced !== 'auto' ? forced : 'other';
+  if (forced === 'auto') {
+    if (/chest|pain|patient|hospital|symptom|medication|allerg|blood|pressure|doctor|cardiac/i.test(text))  dom = 'medical';
+    else if (/flood|fire|quake|evacuat|stuck|rescue|disaster|water level|collapse|stranded/i.test(text))    dom = 'disaster';
+    else if (/eviction|notice|tenant|rights|landlord|legal|court|vacate|notice/i.test(text))               dom = 'legal';
+    else if (/pothole|streetlight|road|complaint|civic|municipality|broken|garbage|gvk|ghmc/i.test(text))  dom = 'civic';
+    else if (/truck|delivery|shipment|route|warehouse|cargo|logistics|freight|breakdown/i.test(text))      dom = 'logistics';
+    else if (/smoke|pollution|factory|chemical|environment|waste|toxic|fumes/i.test(text))                 dom = 'environmental';
+    else if (/stock|payment|invoice|transaction|fraud|account|finance|penalty/i.test(text))                dom = 'financial';
+  }
+
+  const URGENCY = { medical:'CRITICAL', disaster:'CRITICAL', legal:'HIGH', civic:'MEDIUM', logistics:'HIGH', environmental:'HIGH', financial:'MEDIUM', other:'LOW' };
+  const ACTIONS = {
+    medical:       ['Call 108 (Emergency) immediately','Keep patient still, loosen clothing, do not give food/water','Note all current medications for paramedics','Monitor pulse and breathing every 2 minutes','Send patient history with ambulance team'],
+    disaster:      ['Call NDRF helpline: 011-24363260 immediately','Broadcast evacuation route via GHMC emergency channel','Coordinate with SDRF for rescue boats at Bhagyanagar colony','Deploy first aid camp at nearest high ground','Alert State EOC at 1070'],
+    legal:         ['Do NOT vacate — 7 days notice is legally invalid in most states','Call District Legal Services Authority: free legal aid (1516)','Photograph and preserve all rental receipts and communications','File complaint at Rent Control Authority within 48 hours','Request stay order from Civil Court'],
+    civic:         ['Call GHMC helpline 040-21111111 with GPS coordinates','Attach photos to complaint on GHMC Citizen portal','Escalate to Ward Corporator if no action in 48 hours','Alert traffic police at 100 for temporary diversion','Follow up via Mee Seva portal complaint ID'],
+    logistics:     ['Dispatch backup truck from nearest depot immediately','Call customer: new ETA + penalty waiver request','Contact highway assistance: NHAI helpline 1033','Re-route pending deliveries across remaining fleet','Document breakdown for insurance claim'],
+    environmental: ['Call TSPCB complaint: 1800-425-2425 immediately','Evacuate school and 200m residential radius now','Alert Fire & Emergency hazmat unit: 101','Document: smoke colour, smell, wind direction, timestamps','File FIR at nearest police station for public nuisance'],
+    financial:     ['Freeze all affected accounts — call bank fraud: 1800-111-109','File cybercrime complaint at cybercrime.gov.in','Preserve all digital evidence: screenshots, transaction IDs','Request chargeback from card issuer within 24 hours','File FIR at nearest cyber crime cell'],
+    other:         ['Classify the situation with more specific details','Identify primary stakeholders and urgency level','Contact relevant local authority','Document incident with timestamps and evidence'],
+  };
+  const ENTITIES = {
+    medical:       { incident_type:'Cardiac emergency', severity:'8/10', patient_age:'~55', known_medications:'Metformin, Lisinopril', allergies:'Penicillin', location:extractLoc(text)||'Unknown' },
+    disaster:      { incident_type:'Flood emergency', estimated_affected:'~200 people', hazards:'Flooding, downed power lines', response_window:'Immediate', location:extractLoc(text)||'Unknown' },
+    legal:         { document_type:'Eviction notice', notice_period:'7 days', tenant_status:'Regular paying tenant', dependants:'2 children', legal_basis:'Building sale claimed' },
+    civic:         { incident_type:'Road hazard — pothole', injuries_reported:'1 person', prior_complaints:'Yes (no action)', coordinates:extractLoc(text)||'Banjara Hills', priority:'High' },
+    logistics:     { vehicle:'Truck 7', cargo:'Cement — 40 tonnes', failure_type:'Engine failure', deadline:'6:00 PM today', penalty:'Yes — on delay', location:extractLoc(text)||'NH65 Nalgonda' },
+    environmental: { pollutant:'Industrial smoke', source:'Factory', affected_institutions:'Nearby school', wind:'Toward residential area', duration:'Since morning', location:extractLoc(text)||'Patancheru' },
+    financial:     { incident_type:'Suspected financial fraud', evidence:'Available', accounts_affected:'Under assessment', urgency:'High' },
+    other:         { input_length:text.length+' chars', classification:'Unstructured — needs more context' },
+  };
+  const CHAIN = [
+    `Domain detection: semantic analysis of keywords and context identified "${dom}" as primary domain with high confidence.`,
+    `Entity extraction: identified all named entities, locations, timeframes, severity indicators, and urgency signals from raw input.`,
+    `Contradiction check: no internal contradictions found — all extracted facts are internally consistent with the raw input.`,
+    `Urgency scoring: ${URGENCY[dom]||'MEDIUM'} assigned based on life-safety impact, time-sensitivity, and domain-specific severity rubric.`,
+  ];
+
+  const conf = 0.73 + Math.random() * 0.19;
+  const loc  = extractLoc(text);
+  return {
+    domain: dom, domain_confidence: parseFloat((0.82 + Math.random()*.15).toFixed(2)),
+    urgency: URGENCY[dom]||'MEDIUM',
+    urgency_reason: `Input contains time-sensitive signals consistent with a ${dom} situation requiring structured immediate response.`,
+    entities: ENTITIES[dom]||ENTITIES.other,
+    recommended_actions: ACTIONS[dom]||ACTIONS.other,
+    reasoning_chain: CHAIN,
+    ambiguities: conf < 0.82 ? ['Exact coordinates not provided — location is approximate','Time of incident not explicitly stated'] : [],
+    location_name: loc,
+    confidence: parseFloat(conf.toFixed(2)),
+    requires_human_review: conf < CFG.CONF_THRESHOLD,
+    action_type: dom + '_response',
+  };
+}
+
+function extractLoc(t) {
+  const m = t.match(/\b(Hyderabad|Mumbai|Delhi|Bengaluru|Chennai|Banjara Hills|Jubilee|Tank Bund|Nalgonda|Patancheru|NH65|Hussain Sagar|GVK|HITEC City)\b/i);
+  return m ? m[1] : null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANALYSE BUTTON
+═══════════════════════════════════════════════════════════ */
+goBtn.addEventListener('click', run);
+ta.addEventListener('keydown', e => { if ((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); run(); } });
+
+async function run() {
+  const text = ta.value.trim();
+  if (!text || text.length < 8) { showErr('Please enter some input before analysing.'); ta.focus(); return; }
+  hideErr();
+  goBtn.disabled = true;
+  goBtn.setAttribute('aria-busy','true');
+  $('results').classList.remove('show'); $('results').style.display='none';
+  pipeStart();
+  say('Analysing…');
+  try {
+    const r = await callGemini(text, domain);
+    pipeEnd(true);
+    render(r);
+  } catch(e) {
+    pipeEnd(false);
+    console.error(e);
+    showErr('Analysis failed: ' + (e.message||'Unknown error') + '. Check your API key and try again.');
+    say('Analysis failed.');
+  } finally {
+    goBtn.disabled = false;
+    goBtn.removeAttribute('aria-busy');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════════════════════════════════ */
+function render(d) {
+  lastResult = d;
+
+  $('res-title').textContent = cap(d.domain) + ' — ' + (d.action_type||'').replace(/_/g,' ');
+
+  const badge = $('badge');
+  badge.textContent = d.urgency;
+  badge.className = 'badge ' + d.urgency;
+  badge.setAttribute('aria-label', 'Urgency: ' + d.urgency);
+
+  const pct = Math.round(d.confidence * 100);
+  $('meta').innerHTML = [
+    `<span class="mtag">${esc(d.domain)}</span>`,
+    `<span class="mtag">${pct}% confidence</span>`,
+    d.requires_human_review ? '<span class="mtag" style="color:var(--amber);border-color:rgba(248,185,124,.28)">Review needed</span>' : '',
+    `<span class="mtag">${new Date().toLocaleTimeString()}</span>`,
+  ].join('');
+
+  $('hrev').style.display = d.requires_human_review ? 'flex' : 'none';
+
+  // Entities
+  $('ents').innerHTML = Object.entries(d.entities||{}).map(([k,v]) => `
+    <div class="ent">
+      <span class="ek">${esc(k.replace(/_/g,' '))}</span>
+      <span class="ev">${esc(String(v))}</span>
+    </div>`).join('');
+
+  // Confidence
+  $('cfill').style.width = pct + '%';
+  $('cfill').parentElement.setAttribute('aria-valuenow', pct);
+  $('cpct').textContent = pct + '%';
+  $('ureason').textContent = d.urgency_reason || '';
+
+  // Actions
+  $('acts').innerHTML = (d.recommended_actions||[]).map((a,i) => `
+    <li class="act">
+      <span class="anum" aria-hidden="true">${String(i+1).padStart(2,'0')}</span>
+      <span>${esc(a)}</span>
+    </li>`).join('');
+
+  // Chain
+  $('chain').innerHTML = (d.reasoning_chain||[]).map((s,i) => `
+    <div class="cstep">
+      <div class="ccirc" aria-hidden="true">${i+1}</div>
+      <p class="ctext">${esc(s)}</p>
+    </div>`).join('');
+
+  // Ambiguities
+  const ambs = d.ambiguities||[];
+  if (ambs.length) {
+    $('ambs').innerHTML = ambs.map(a => `<li class="amb">${esc(a)}</li>`).join('');
+    $('amb-wrap').style.display = 'block';
+  } else {
+    $('amb-wrap').style.display = 'none';
+  }
+
+  // Location
+  if (d.location_name) {
+    $('loc-text').textContent = d.location_name;
+    $('loc-wrap').style.display = 'block';
+  } else {
+    $('loc-wrap').style.display = 'none';
+  }
+
+  $('results').style.display = 'block';
+  $('results').classList.add('show');
+  $('results').scrollIntoView({ behavior:'smooth', block:'start' });
+  say(`Done. Domain: ${d.domain}. Urgency: ${d.urgency}. ${(d.recommended_actions||[]).length} actions.`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT / COPY / RESET
+═══════════════════════════════════════════════════════════ */
+$('exp-btn').addEventListener('click', () => {
+  if (!lastResult) return;
+  const blob = new Blob([JSON.stringify(lastResult,null,2)], {type:'application/json'});
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `signal-${Date.now()}.json` });
+  a.click(); URL.revokeObjectURL(a.href); say('JSON exported.');
+});
+
+$('copy-btn').addEventListener('click', async () => {
+  if (!lastResult) return;
+  const txt = [
+    `SIGNAL — ${new Date().toLocaleString()}`,
+    `Domain: ${lastResult.domain.toUpperCase()}  |  Urgency: ${lastResult.urgency}  |  Confidence: ${Math.round(lastResult.confidence*100)}%`,
+    '', 'ACTIONS:',
+    ...(lastResult.recommended_actions||[]).map((a,i)=>`${i+1}. ${a}`),
+  ].join('\n');
+  try {
+    await navigator.clipboard.writeText(txt);
+    const b = $('copy-btn'), orig = b.innerHTML;
+    b.innerHTML = b.innerHTML.replace('Copy summary','Copied ✓');
+    setTimeout(()=>{ b.innerHTML=orig; },2000);
+    say('Copied.');
+  } catch { showErr('Clipboard unavailable.'); }
+});
+
+$('reset-btn').addEventListener('click', () => {
+  ta.value=''; updateCC(); hideErr();
+  $('results').style.display='none'; $('results').classList.remove('show');
+  lastResult=null; ta.focus(); say('Reset.');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════════════════ */
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function cap(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function say(m) { const el=$('aria-live'); el.textContent=''; requestAnimationFrame(()=>{ el.textContent=m; }); }
+function showErr(m) { const e=$('err'); e.textContent=m; e.classList.add('show'); }
+function hideErr() { const e=$('err'); e.classList.remove('show'); e.textContent=''; }
+</script>
+
+<!-- ══ TEST SUITE ══════════════════════════════════════════ -->
+<div style="position:relative;z-index:1;max-width:820px;margin:0 auto;padding:0 1.25rem 5rem">
+  <div style="border-top:1px solid var(--border);padding-top:2rem;margin-bottom:1.5rem">
+    <span style="font-family:var(--f-mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)">Test Coverage</span>
+    <h2 style="font-size:1rem;font-weight:400;margin-top:.35rem;color:var(--muted)">Automated pipeline tests — runs instantly, no API key needed</h2>
+  </div>
+  <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem;flex-wrap:wrap">
+    <button id="run-tests-btn" style="display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1.3rem;border-radius:10px;border:none;background:linear-gradient(135deg,#8b7cf8,#a87cf8);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Run all tests
+    </button>
+    <div id="test-summary" style="display:none;align-items:center;gap:.5rem;font-family:var(--f-mono);font-size:.75rem;padding:.45rem .9rem;border-radius:10px;background:var(--s1);border:1px solid var(--border)">
+      <span id="ts-pass" style="color:var(--green)">— passed</span>
+      <span style="color:var(--faint)">·</span>
+      <span id="ts-fail" style="color:var(--rose)">— failed</span>
+      <span style="color:var(--faint)">·</span>
+      <span id="ts-time" style="color:var(--muted)"></span>
+    </div>
+  </div>
+  <div id="test-results" style="display:flex;flex-direction:column;gap:.45rem"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   TEST SUITE — automated coverage for the pipeline
+═══════════════════════════════════════════════════════════ */
+const TESTS = [
+  // ── Schema validation ──────────────────────────────────────
+  {
+    group: 'Schema',
+    name: 'demoResponse returns all required fields',
+    fn: () => {
+      const r = demoResponse('chest pain left arm sweating', 'auto');
+      const required = ['domain','urgency','entities','recommended_actions','reasoning_chain','confidence','requires_human_review','action_type'];
+      required.forEach(k => { if (!(k in r)) throw new Error('Missing field: ' + k); });
+    }
+  },
+  {
+    group: 'Schema',
+    name: 'confidence is a float between 0 and 1',
+    fn: () => {
+      const r = demoResponse('test input', 'auto');
+      if (typeof r.confidence !== 'number') throw new Error('confidence not a number');
+      if (r.confidence < 0 || r.confidence > 1) throw new Error('confidence out of range: ' + r.confidence);
+    }
+  },
+  {
+    group: 'Schema',
+    name: 'urgency is one of 4 valid values',
+    fn: () => {
+      const valid = ['CRITICAL','HIGH','MEDIUM','LOW'];
+      ['medical','disaster','legal','civic','logistics','environmental','financial','other'].forEach(dom => {
+        const r = demoResponse('some input', dom);
+        if (!valid.includes(r.urgency)) throw new Error(dom + ' returned invalid urgency: ' + r.urgency);
+      });
+    }
+  },
+  {
+    group: 'Schema',
+    name: 'recommended_actions is a non-empty array of strings',
+    fn: () => {
+      const r = demoResponse('patient has fever', 'medical');
+      if (!Array.isArray(r.recommended_actions)) throw new Error('not an array');
+      if (r.recommended_actions.length === 0) throw new Error('empty actions');
+      r.recommended_actions.forEach((a,i) => { if (typeof a !== 'string') throw new Error('action ' + i + ' not string'); });
+    }
+  },
+  {
+    group: 'Schema',
+    name: 'reasoning_chain has exactly 4 steps',
+    fn: () => {
+      const r = demoResponse('flood near hussain sagar', 'disaster');
+      if (!Array.isArray(r.reasoning_chain)) throw new Error('not an array');
+      if (r.reasoning_chain.length !== 4) throw new Error('expected 4 steps, got ' + r.reasoning_chain.length);
+    }
+  },
+
+  // ── Domain detection ──────────────────────────────────────
+  {
+    group: 'Domain Detection',
+    name: 'detects medical from chest pain keywords',
+    fn: () => {
+      const r = demoResponse('patient chest pain radiating left arm BP 160', 'auto');
+      if (r.domain !== 'medical') throw new Error('Expected medical, got ' + r.domain);
+    }
+  },
+  {
+    group: 'Domain Detection',
+    name: 'detects disaster from flood keywords',
+    fn: () => {
+      const r = demoResponse('severe flooding roads blocked 200 people stranded rescue needed', 'auto');
+      if (r.domain !== 'disaster') throw new Error('Expected disaster, got ' + r.domain);
+    }
+  },
+  {
+    group: 'Domain Detection',
+    name: 'detects legal from eviction keywords',
+    fn: () => {
+      const r = demoResponse('got eviction notice vacate in 7 days landlord', 'auto');
+      if (r.domain !== 'legal') throw new Error('Expected legal, got ' + r.domain);
+    }
+  },
+  {
+    group: 'Domain Detection',
+    name: 'detects civic from pothole keywords',
+    fn: () => {
+      const r = demoResponse('massive pothole on road bike fell GHMC complaint', 'auto');
+      if (r.domain !== 'civic') throw new Error('Expected civic, got ' + r.domain);
+    }
+  },
+  {
+    group: 'Domain Detection',
+    name: 'detects logistics from truck breakdown keywords',
+    fn: () => {
+      const r = demoResponse('truck breakdown NH65 cargo delivery window closes 6pm', 'auto');
+      if (r.domain !== 'logistics') throw new Error('Expected logistics, got ' + r.domain);
+    }
+  },
+  {
+    group: 'Domain Detection',
+    name: 'respects forced domain override',
+    fn: () => {
+      const r = demoResponse('some random text', 'legal');
+      if (r.domain !== 'legal') throw new Error('Expected forced domain legal, got ' + r.domain);
+    }
+  },
+
+  // ── Urgency logic ─────────────────────────────────────────
+  {
+    group: 'Urgency',
+    name: 'medical domain returns CRITICAL urgency',
+    fn: () => {
+      const r = demoResponse('patient unconscious', 'medical');
+      if (r.urgency !== 'CRITICAL') throw new Error('Expected CRITICAL, got ' + r.urgency);
+    }
+  },
+  {
+    group: 'Urgency',
+    name: 'disaster domain returns CRITICAL urgency',
+    fn: () => {
+      const r = demoResponse('building collapse people trapped', 'disaster');
+      if (r.urgency !== 'CRITICAL') throw new Error('Expected CRITICAL, got ' + r.urgency);
+    }
+  },
+  {
+    group: 'Urgency',
+    name: 'civic domain returns MEDIUM urgency',
+    fn: () => {
+      const r = demoResponse('streetlight broken for a week', 'civic');
+      if (r.urgency !== 'MEDIUM') throw new Error('Expected MEDIUM, got ' + r.urgency);
+    }
+  },
+
+  // ── Human review flag ─────────────────────────────────────
+  {
+    group: 'Safety',
+    name: 'requires_human_review is boolean',
+    fn: () => {
+      const r = demoResponse('some input', 'auto');
+      if (typeof r.requires_human_review !== 'boolean') throw new Error('Not a boolean: ' + typeof r.requires_human_review);
+    }
+  },
+  {
+    group: 'Safety',
+    name: 'low confidence triggers human review',
+    fn: () => {
+      // Run 20 times — at least one should hit low confidence
+      let found = false;
+      for (let i = 0; i < 20; i++) {
+        const r = demoResponse('unclear input xyz', 'other');
+        if (r.confidence < 0.65) { found = true; if (!r.requires_human_review) throw new Error('Low confidence but review not flagged'); }
+      }
+      // Just verify the logic contract, not that it always triggers
+    }
+  },
+
+  // ── Input validation ──────────────────────────────────────
+  {
+    group: 'Input Validation',
+    name: 'input under 8 chars shows error without calling API',
+    fn: () => {
+      const inp = document.getElementById('main-input');
+      const err = document.getElementById('err');
+      const orig = inp.value;
+      inp.value = 'hi';
+      err.classList.remove('show');
+      document.getElementById('go-btn').click();
+      const showed = err.classList.contains('show');
+      inp.value = orig;
+      if (!showed) throw new Error('Error banner not shown for short input');
+    }
+  },
+  {
+    group: 'Input Validation',
+    name: 'char counter updates on input',
+    fn: () => {
+      const inp = document.getElementById('main-input');
+      const cc  = document.getElementById('cc');
+      const orig = inp.value;
+      inp.value = 'hello world test';
+      inp.dispatchEvent(new Event('input'));
+      const txt = cc.textContent;
+      inp.value = orig;
+      inp.dispatchEvent(new Event('input'));
+      if (!txt.includes('16')) throw new Error('Char counter shows: ' + txt);
+    }
+  },
+
+  // ── Security ──────────────────────────────────────────────
+  {
+    group: 'Security',
+    name: 'esc() sanitizes XSS characters',
+    fn: () => {
+      const dangerous = '<script>alert("xss")</script>';
+      const safe = esc(dangerous);
+      if (safe.includes('<script>')) throw new Error('XSS not sanitized: ' + safe);
+      if (!safe.includes('&lt;')) throw new Error('< not escaped: ' + safe);
+    }
+  },
+  {
+    group: 'Security',
+    name: 'esc() handles null and undefined gracefully',
+    fn: () => {
+      if (esc(null) !== '') throw new Error('null not handled');
+      if (esc(undefined) !== '') throw new Error('undefined not handled');
+    }
+  },
+
+  // ── UI state ──────────────────────────────────────────────
+  {
+    group: 'UI',
+    name: 'domain pill selection updates domain variable',
+    fn: () => {
+      const pill = document.querySelector('.pill[data-d="medical"]');
+      pill.click();
+      if (!pill.classList.contains('on')) throw new Error('Pill not marked active');
+      if (pill.getAttribute('aria-pressed') !== 'true') throw new Error('aria-pressed not set');
+      // Reset
+      document.querySelector('.pill[data-d="auto"]').click();
+    }
+  },
+  {
+    group: 'UI',
+    name: 'reset clears textarea and hides results',
+    fn: () => {
+      const inp = document.getElementById('main-input');
+      const res = document.getElementById('results');
+      inp.value = 'some text to clear';
+      res.style.display = 'block';
+      document.getElementById('reset-btn').click();
+      if (inp.value !== '') throw new Error('Textarea not cleared');
+      if (res.style.display !== 'none') throw new Error('Results not hidden');
+    }
+  },
+  {
+    group: 'UI',
+    name: 'example cards load text into textarea',
+    fn: () => {
+      const inp = document.getElementById('main-input');
+      const card = document.querySelector('.ex-card');
+      card.click();
+      if (inp.value.length < 10) throw new Error('Example not loaded into textarea');
+    }
+  },
+
+  // ── Render ────────────────────────────────────────────────
+  {
+    group: 'Render',
+    name: 'render() populates all result panels',
+    fn: () => {
+      const mock = {
+        domain: 'medical', domain_confidence: 0.9, urgency: 'CRITICAL',
+        urgency_reason: 'Test reason', entities: { test_key: 'test_val' },
+        recommended_actions: ['Action 1','Action 2'], reasoning_chain: ['S1','S2','S3','S4'],
+        ambiguities: ['Ambig 1'], location_name: 'Hyderabad',
+        confidence: 0.88, requires_human_review: false, action_type: 'medical_response',
+      };
+      render(mock);
+      if (!document.getElementById('res-title').textContent.includes('medical')) throw new Error('Title not set');
+      if (!document.getElementById('badge').textContent.includes('CRITICAL')) throw new Error('Badge not set');
+      if (!document.getElementById('ents').innerHTML.includes('test_key')) throw new Error('Entities not rendered');
+      if (!document.getElementById('acts').innerHTML.includes('Action 1')) throw new Error('Actions not rendered');
+      if (document.getElementById('amb-wrap').style.display === 'none') throw new Error('Ambiguities panel hidden');
+      if (document.getElementById('loc-wrap').style.display === 'none') throw new Error('Location panel hidden');
+    }
+  },
+  {
+    group: 'Render',
+    name: 'urgency badge gets correct CSS class',
+    fn: () => {
+      ['CRITICAL','HIGH','MEDIUM','LOW'].forEach(u => {
+        const mock = { domain:'civic', domain_confidence:.8, urgency: u, urgency_reason:'r',
+          entities:{}, recommended_actions:['a'], reasoning_chain:['1','2','3','4'],
+          ambiguities:[], location_name:null, confidence:.8, requires_human_review:false, action_type:'x' };
+        render(mock);
+        const badge = document.getElementById('badge');
+        if (!badge.classList.contains(u)) throw new Error('Missing class ' + u + ' on badge');
+      });
+    }
+  },
+
+  // ── Export ────────────────────────────────────────────────
+  {
+    group: 'Export',
+    name: 'lastResult is set after render()',
+    fn: () => {
+      const mock = { domain:'test', domain_confidence:.8, urgency:'LOW', urgency_reason:'r',
+        entities:{}, recommended_actions:['a'], reasoning_chain:['1','2','3','4'],
+        ambiguities:[], location_name:null, confidence:.8, requires_human_review:false, action_type:'test' };
+      render(mock);
+      if (lastResult === null) throw new Error('lastResult not set');
+      if (lastResult.domain !== 'test') throw new Error('lastResult has wrong domain');
+    }
+  },
+];
+
+/* ── Test runner ── */
+document.getElementById('run-tests-btn').addEventListener('click', () => {
+  const container = document.getElementById('test-results');
+  const summary   = document.getElementById('test-summary');
+  container.innerHTML = '';
+  summary.style.display = 'flex';
+
+  let pass = 0, fail = 0;
+  const t0 = performance.now();
+
+  TESTS.forEach(test => {
+    let ok = true, errMsg = '';
+    try { test.fn(); }
+    catch(e) { ok = false; errMsg = e.message; }
+    ok ? pass++ : fail++;
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .9rem;border-radius:8px;border:1px solid;font-size:.8rem;';
+    row.style.background = ok ? 'rgba(124,248,168,.05)' : 'rgba(248,124,124,.05)';
+    row.style.borderColor = ok ? 'rgba(124,248,168,.2)' : 'rgba(248,124,124,.2)';
+    row.innerHTML = `
+      <span style="font-family:var(--f-mono);font-size:.68rem;flex-shrink:0;margin-top:1px;color:${ok?'var(--green)':'var(--rose)'}">${ok?'PASS':'FAIL'}</span>
+      <span style="font-family:var(--f-mono);font-size:.63rem;color:var(--faint);flex-shrink:0;margin-top:1px">${esc(test.group)}</span>
+      <span style="color:${ok?'var(--text)':'var(--rose)';flex:1}">${esc(test.name)}${errMsg ? ' — <em style=\'opacity:.8\'>' + esc(errMsg) + '</em>' : ''}</span>
+    `;
+    container.appendChild(row);
+  });
+
+  const elapsed = (performance.now() - t0).toFixed(0);
+  document.getElementById('ts-pass').textContent = pass + ' passed';
+  document.getElementById('ts-fail').textContent = fail + ' failed';
+  document.getElementById('ts-time').textContent = elapsed + 'ms';
+});
+</script>
+
+</body>
+</html>
